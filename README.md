@@ -1,0 +1,1 @@
+# ngx-multi-line-ellipsis
