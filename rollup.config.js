@@ -14,9 +14,9 @@ export default {
             'rxjs/add/observable/of': 'Rx.Observable'
         },
         format: 'umd',
-        sourceMap: false
+        sourceMap: false,
+        name: 'ngx.multi.line.ellipsis'
     },
-    name: 'ngx.multi.line.ellipsis',
     plugins: [
         resolve({
             modulesOnly: true
