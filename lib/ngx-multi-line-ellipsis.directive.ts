@@ -14,6 +14,8 @@ export class NgxMultiLineEllipsisDirective implements AfterViewInit {
 
   ngAfterViewInit(): void {
 
+    this.renderer.setStyle(this.el.nativeElement, 'visibility', 'hidden');
+
     // Get element font size to be able to measure max height
     const elementFontSize =
       parseInt(this.getCssproperty(this.el.nativeElement, 'font-size')
@@ -31,6 +33,7 @@ export class NgxMultiLineEllipsisDirective implements AfterViewInit {
     // A flag veriable to indicate if current words num as reached
     // the required lines num (minus one)
     let hasReachedLimit = false;
+    let finishLoop = false;
 
     // A veriable that holds current height (top element)
     let currentElemetHeight = 0;
@@ -40,7 +43,7 @@ export class NgxMultiLineEllipsisDirective implements AfterViewInit {
     let completeWordsText = '';
 
     // Run on original text string
-    for (let i = 0; i < elementOriginalText.length; i++) {
+    for (let i = 0; i < elementOriginalText.length && !finishLoop; i++) {
 
       // Get current (parent) element height
       currentElemetHeight =
@@ -49,7 +52,7 @@ export class NgxMultiLineEllipsisDirective implements AfterViewInit {
 
       // Checks if current height is smaller than
       // the max line number times font size (line height)
-      if (currentElemetHeight < ((elementFontSize + 2) * this.lines) && 
+      if (currentElemetHeight < ((elementFontSize + 2) * this.lines) &&
           !hasReachedLimit) {
 
         // Save the current text as previos text
@@ -57,7 +60,7 @@ export class NgxMultiLineEllipsisDirective implements AfterViewInit {
 
         // If the current char is 'Space' then it saves the current text
         // as it has only complete words
-        if (elementOriginalText.charAt(i) && 
+        if (elementOriginalText.charAt(i) &&
             elementOriginalText.charAt(i) === '\u0020') {
           completeWordsText = this.el.nativeElement.innerHTML;
         }
@@ -116,39 +119,19 @@ export class NgxMultiLineEllipsisDirective implements AfterViewInit {
           completeWordsText = this.el.nativeElement.innerHTML;
         }
 
+        finishLoop = true;
+
         // Add current char to ellipsis text
-        ellipsisTextLine = ellipsisTextLine + elementOriginalText.charAt(i);
+        ellipsisTextLine = ellipsisTextLine + elementOriginalText.slice(i);
       }
     }
 
-    // Create new dive element
-    const div = this.renderer.createElement('div');
+    this.renderer.setStyle(this.el.nativeElement, 'visibility', 'visible');
 
-    // Create new text line with the ellipsis text string
-    const text = this.renderer.createText(ellipsisTextLine.trim());
-
-    // Set all styles on the new element to get ellipsis behavior
-    this.renderer.setStyle(
-      div,
-      'overflow',
-      'hidden'
+    this.el.nativeElement.insertAdjacentHTML(
+      'beforeend',
+      `<div style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">${ellipsisTextLine.trim()}</div>`
     );
-
-    this.renderer.setStyle(
-      div,
-      'white-space',
-      'nowrap'
-    );
-
-    this.renderer.setStyle(
-      div,
-      'text-overflow',
-      'ellipsis'
-    );
-
-    // Append the new ellipsis div to current elemnt (will appear below the upper text)
-    this.renderer.appendChild(div, text);
-    this.renderer.appendChild(this.el.nativeElement, div);
   }
 
   getCssproperty(element: Element, property: string) {
