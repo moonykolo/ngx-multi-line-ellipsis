@@ -138,10 +138,15 @@ export class NgxMultiLineEllipsisDirective implements AfterViewInit {
           completeWordsText = topElementTextLines;
         }
 
-        finishLoop = true;
-
         // Add current char to ellipsis text
-        ellipsisTextLine = ellipsisTextLine + elementOriginalText.slice(i);
+        ellipsisTextLine = ellipsisTextLine + elementOriginalText.charAt(i);
+
+        // Get the new current element width
+        currentTopElemetWidth += canvasContext.measureText(allLetters[i]).width;
+
+        if ((originalElementWidth * this.lines) - currentTopElemetWidth < -100 ) {
+          finishLoop = true;
+        }
       }
     }
 
