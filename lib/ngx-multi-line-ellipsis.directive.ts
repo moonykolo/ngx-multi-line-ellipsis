@@ -14,8 +14,6 @@ export class NgxMultiLineEllipsisDirective implements AfterViewInit {
 
   ngAfterViewInit(): void {
 
-    this.renderer.setStyle(this.el.nativeElement, 'display', 'none');
-
     // Get element font size
     const elementFontSize =
       parseInt(this.getCssproperty(this.el.nativeElement, 'font-size')
@@ -27,9 +25,10 @@ export class NgxMultiLineEllipsisDirective implements AfterViewInit {
         .split(',')[0];
 
     // Get element width
-    const originalElementWidth =
-      parseInt(this.getCssproperty(this.el.nativeElement, 'width')
-        .split('px')[0], 10);
+    const originalElementWidth = this.el.nativeElement.clientWidth;
+
+    // Remove the element from DOM
+    this.renderer.setStyle(this.el.nativeElement, 'display', 'none');
 
     // Create a canvas element so it'd be possiable to measure expected width
     const canvas = this.renderer.createElement('canvas');
@@ -65,6 +64,7 @@ export class NgxMultiLineEllipsisDirective implements AfterViewInit {
     // Run on original text string
     for (let i = 0; i < elementOriginalText.length && !finishLoop; i++) {
 
+
       // Checks if current width is smaller than
       // the max width for line times the lines to display minus one
       if (currentTopElemetWidth < (originalElementWidth * (this.lines - 1)) &&
@@ -86,6 +86,11 @@ export class NgxMultiLineEllipsisDirective implements AfterViewInit {
 
         // Get the new current element width
         currentTopElemetWidth += canvasContext.measureText(allLetters[i]).width;
+
+        if (elementOriginalText.charAt(i) &&
+          elementOriginalText.charAt(i) === '\n') {
+          currentTopElemetWidth -= canvasContext.measureText(allLetters[i]).width;
+        }
 
         // Checks if current width is bigger or equal to
         // the max width for line times the lines to display minus one
@@ -110,15 +115,17 @@ export class NgxMultiLineEllipsisDirective implements AfterViewInit {
 
             // Get the previos text (to get the last word taht we didn't included)
             const previosTextSplitBySpaces = previosText.split(' ');
-
-            // Set the ellipsis text line with it's first word and current char
-            ellipsisTextLine =
+            const previosLetter =
               previosTextSplitBySpaces[previosTextSplitBySpaces.length - 1] +
               elementOriginalText.charAt(i);
+
+            ellipsisTextLine = previosLetter;
           }
 
           // Set flag to true so now it'll start to fill ellipsis element
           hasReachedLimit = true;
+
+          // Set the ellipsis text line with it's first word and current char
         }
 
         // Finish to fill the top element
